@@ -40,6 +40,10 @@ export function GameTable(p: GameTableProps) {
   const [promo, setPromo] = useState<{ orig: Key; dest: Key } | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const [boardReset, setBoardReset] = useState(0);
+  // 棋盘中央的大字横幅：将军 / 输赢。key 递增保证同样的字也会重播动画
+  const [banner, setBanner] = useState<{ text: string; tone: 'check' | 'win' | 'lose' | 'draw'; key: number } | null>(null);
+  const [toast, setToast] = useState<{ text: string; key: number } | null>(null);
+  const showToast = (text: string) => setToast({ text, key: Date.now() });
   const c = common(p.view);
   const game = p.view.game;
   const face = p.faceAllowed && settings.face && game !== 'gomoku';
@@ -49,19 +53,44 @@ export function GameTable(p: GameTableProps) {
   useEffect(() => {
     const before = prev.current;
     const finished = p.status.kind !== 'playing';
-    if (c.moveCount === before.moveCount + 1) {
+    const moved = c.moveCount === before.moveCount + 1;
+    if (moved) {
       playMoveSound(game, c.captures > before.captures);
       vibrate(c.captures > before.captures ? 18 : 10);
     }
     if (finished && !before.finished) {
-      setResultOpen(true);
       // 同屏模式总放胜利音；其他模式看下方（自己）是否赢了
       const meWon = p.status.kind === 'win' && (p.canMove === 'both' || p.status.winner === p.bottom.side);
+      const tone = p.status.kind === 'draw' ? 'draw' : meWon ? 'win' : 'lose';
+      setBanner({ text: p.resultTitle, tone, key: Date.now() });
       setTimeout(() => playEndSound(meWon), 260);
+      vibrate(30);
+      // 结果面板等大字横幅播完再弹（见下面横幅的计时）
+    } else if (moved && !finished && c.check) {
+      setBanner({ text: '将军', tone: 'check', key: Date.now() });
+      vibrate(24);
     }
     if (!finished) setResultOpen(false);
     prev.current = { moveCount: c.moveCount, captures: c.captures, finished };
-  }, [c.moveCount, c.captures, p.status, game, p.canMove, p.bottom.side]);
+  }, [c.moveCount, c.captures, c.check, p.status, p.resultTitle, game, p.canMove, p.bottom.side]);
+
+  useEffect(() => {
+    if (!banner) return;
+    const t = setTimeout(
+      () => {
+        setBanner(null);
+        if (banner.tone !== 'check') setResultOpen(true);
+      },
+      banner.tone === 'check' ? 1300 : 1600,
+    );
+    return () => clearTimeout(t);
+  }, [banner]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 1600);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const handleCgMove = (orig: Key, dest: Key) => {
     if (p.view.game === 'chess') {
@@ -104,6 +133,7 @@ export function GameTable(p: GameTableProps) {
               confirm={settings.confirm}
               onPlace={(at) => p.onMove(String(at))}
               onPendingChange={setPendingConfirm}
+              onOccupied={() => showToast('这里已经有子了')}
             />
           ) : (
             <CgBoard
@@ -120,7 +150,13 @@ export function GameTable(p: GameTableProps) {
               face={face}
               onMove={handleCgMove}
               onPendingChange={setPendingConfirm}
+              onIllegalTap={showToast}
             />
+          )}
+          {banner && (
+            <div key={banner.key} className={`board-banner ${banner.tone}`} role="status">
+              {banner.text}
+            </div>
           )}
         </div>
         <PlayerBar game={game} seat={p.bottom} active={playing && c.turn === p.bottom.side} captured={captured(p.bottom.side)} />
@@ -164,6 +200,11 @@ export function GameTable(p: GameTableProps) {
             </div>
           </div>
         </>
+      )}
+      {toast && (
+        <div key={toast.key} className="toast" role="status">
+          {toast.text}
+        </div>
       )}
       <SettingsSheet open={showSettings} onClose={() => setShowSettings(false)} showFace={p.faceAllowed && game !== 'gomoku'} />
     </div>

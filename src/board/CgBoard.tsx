@@ -21,6 +21,7 @@ export interface CgBoardProps {
   face: boolean;
   onMove: (orig: Key, dest: Key) => void;
   onPendingChange?: (pending: boolean) => void;
+  onIllegalTap?: (message: string) => void; // 点了不能走的地方 / 没法走的子
 }
 
 interface Pending {
@@ -132,9 +133,28 @@ export function CgBoard(props: CgBoardProps) {
     sync();
   }, [props.fen, props.turn, props.orientation, props.movable, props.dests, props.lastMove, props.check]);
 
+  // 在 chessgroundx 处理点击之前看一眼：选中了子却点到不能走的地方，或者点的子根本没地方走，就给提示
+  const checkTap = (e: React.PointerEvent) => {
+    const api = cg.current;
+    const p = latest.current;
+    if (!api || pending.current || !p.movable) return;
+    const key = api.getKeyAtDomPos([e.clientX, e.clientY]);
+    if (!key) return;
+    const mover = p.movable === 'both' ? p.turn : p.movable;
+    if (mover !== p.turn) return;
+    const piece = api.state.boardState.pieces.get(key);
+    const own = piece?.color === mover;
+    const sel = api.state.selectable.selected;
+    if (typeof sel === 'string' && sel !== key && !own) {
+      if (!p.dests.get(sel as Key)?.includes(key)) p.onIllegalTap?.(p.check ? '这里不能走（正被将军）' : '这里不能走');
+    } else if (own && !p.dests.get(key)?.length) {
+      p.onIllegalTap?.(p.check ? '被将军了，这个子解不了将' : '这个子现在没法走');
+    }
+  };
+
   return (
     // 皮肤类名挂在外层：chessgroundx 自己会改内层的 class
-    <div className={`board-frame ${props.variant}${props.face ? ' face' : ''}`}>
+    <div className={`board-frame ${props.variant}${props.face ? ' face' : ''}`} onPointerDownCapture={checkTap}>
       <div ref={el} />
     </div>
   );

@@ -12,6 +12,7 @@ interface Props {
   confirm: boolean;
   onPlace: (at: number) => void;
   onPendingChange?: (pending: boolean) => void;
+  onOccupied?: () => void;
 }
 
 const CELL = 40;
@@ -27,7 +28,7 @@ const STARS = [
 ];
 const pos = (i: number) => PAD + i * CELL;
 
-export function GomokuBoard({ board, turn, lastMove, winLine, interactive, confirm, onPlace, onPendingChange }: Props) {
+export function GomokuBoard({ board, turn, lastMove, winLine, interactive, confirm, onPlace, onPendingChange, onOccupied }: Props) {
   const svg = useRef<SVGSVGElement>(null);
   const [pending, setPendingState] = useState<number | null>(null);
 
@@ -54,6 +55,7 @@ export function GomokuBoard({ board, turn, lastMove, winLine, interactive, confi
     const at = r * SIZE + c;
     if (board[at]) {
       setPending(null);
+      onOccupied?.();
       return;
     }
     if (!confirm || pending === at) {
