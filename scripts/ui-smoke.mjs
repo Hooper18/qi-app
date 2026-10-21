@@ -1,7 +1,8 @@
 // 通过真实界面测三种人机：进对局 → 人走一步（两下确认）→ 等电脑应子。用法：node scripts/ui-smoke.mjs [站点根地址]
 import { chromium } from 'playwright';
 const root = process.argv[2] ?? 'http://localhost:5188/';
-const b = await chromium.launch();
+// 本机 DNS 还没刷新时可设 QI_RESOLVE='MAP 域名 IP' 绕过
+const b = await chromium.launch(process.env.QI_RESOLVE ? { args: [`--host-resolver-rules=${process.env.QI_RESOLVE}`] } : {});
 const ctx = await b.newContext({ viewport: { width: 375, height: 812 } });
 const p = await ctx.newPage();
 p.on('pageerror', (e) => console.log('pageerror:', e.message));

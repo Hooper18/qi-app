@@ -2,7 +2,8 @@
 import { chromium } from 'playwright';
 const code = String(Math.floor(1000 + Math.random() * 9000));
 const base = process.argv[2] ?? 'http://localhost:5188/';
-const b = await chromium.launch();
+// 本机 DNS 还没刷新时可设 QI_RESOLVE='MAP 域名 IP' 绕过
+const b = await chromium.launch(process.env.QI_RESOLVE ? { args: [`--host-resolver-rules=${process.env.QI_RESOLVE}`] } : {});
 const mk = async (name) => {
   const ctx = await b.newContext({ viewport: { width: 375, height: 812 } });
   const p = await ctx.newPage();
