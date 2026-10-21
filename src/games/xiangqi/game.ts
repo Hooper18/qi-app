@@ -1,5 +1,4 @@
 // 中国象棋对局层：重放着法、判定胜负。
-import type { GameStatus } from '../../core/types';
 import {
   type Side,
   type XMove,
@@ -14,13 +13,19 @@ import {
   xMake,
 } from './rules';
 
+export type XStatus =
+  | { kind: 'playing' }
+  | { kind: 'win'; winner: Side; reason: string }
+  | { kind: 'draw'; reason: string };
+
 export interface XiangqiState {
   pos: XPosition;
   legal: XMove[];
   lastMove: XMove | null;
   checkSq: number;
   captured: Record<Side, XType[]>; // 某方吃掉的子
-  status: GameStatus;
+  status: XStatus;
+  applied: number; // 实际走成的步数（遇到非法着法就停）
 }
 
 export const SIDE_NAME: Record<Side, string> = { r: '红方', b: '黑方' };
@@ -34,12 +39,14 @@ export function replayXiangqi(moves: XMove[], start: XPosition = initialXPositio
   const captured: Record<Side, XType[]> = { r: [], b: [] };
   let legal = xLegalMoves(pos);
   let lastMove: XMove | null = null;
+  let applied = 0;
   for (const m of moves) {
     if (!legal.some((x) => x.from === m.from && x.to === m.to)) break;
     const mover = pos.turn;
     const u = xMake(pos, m);
     if (u.captured) captured[mover].push(u.captured.t);
     lastMove = { from: m.from, to: m.to };
+    applied++;
     keys.push(xKey(pos));
     checks.push(xInCheck(pos));
     legal = xLegalMoves(pos);
@@ -52,6 +59,7 @@ export function replayXiangqi(moves: XMove[], start: XPosition = initialXPositio
     checkSq: check ? findGeneral(pos.board, pos.turn) : -1,
     captured,
     status: xiangqiStatus(pos, legal, check, keys, checks, firstMover),
+    applied,
   };
 }
 
@@ -62,7 +70,7 @@ function xiangqiStatus(
   keys: string[],
   checks: boolean[],
   firstMover: Side,
-): GameStatus {
+): XStatus {
   const winner = otherSide(pos.turn);
   if (legal.length === 0) return { kind: 'win', winner, reason: check ? '绝杀' : '困毙' };
 

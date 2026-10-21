@@ -56,3 +56,23 @@ describe('中国象棋特殊规则', () => {
     expect(s.status).toEqual({ kind: 'draw', reason: '双方均无进攻子力' });
   });
 });
+
+describe('中国象棋适配层', () => {
+  it('坐标换算与初始 FEN', async () => {
+    const { replayXiangqiView, sqToKey, keyToSq } = await import('./adapter');
+    expect(sqToKey(0)).toBe('a:');
+    expect(sqToKey(89)).toBe('i1');
+    expect(keyToSq('e1')).toBe(85);
+    const v = replayXiangqiView([]);
+    expect(v.fen).toBe('rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR');
+    expect(v.turn).toBe('white');
+    expect([...v.dests.values()].reduce((n, l) => n + l.length, 0)).toBe(44);
+  });
+  it('炮二平五后轮到黑方，非法着法被截断', async () => {
+    const { replayXiangqiView } = await import('./adapter');
+    const v = replayXiangqiView([`${sq(7, 7)}-${sq(7, 4)}`, `${sq(0, 0)}-${sq(5, 5)}`]);
+    expect(v.turn).toBe('black');
+    expect(v.moveCount).toBe(1);
+    expect(v.lastMove).toEqual(['h3', 'e3']);
+  });
+});

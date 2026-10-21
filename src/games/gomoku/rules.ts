@@ -1,9 +1,9 @@
 // 五子棋规则：15 路，黑先，无禁手，五连及以上获胜。
-import type { GameStatus } from '../../core/types';
+import type { Color, GameStatus } from '../../core/types';
 
-export type Stone = 'b' | 'w';
+// 棋子颜色直接用全局 Color（black 先手）
+export type Stone = Color;
 export const SIZE = 15;
-export const STONE_NAME: Record<Stone, string> = { b: '黑方', w: '白方' };
 export interface GMove {
   at: number; // r * 15 + c
 }
@@ -43,7 +43,7 @@ export function lineThrough(board: (Stone | null)[], at: number): number[] | nul
 
 export function replayGomoku(moves: GMove[]): GomokuState {
   const board: (Stone | null)[] = new Array(SIZE * SIZE).fill(null);
-  let turn: Stone = 'b';
+  let turn: Stone = 'black';
   let lastMove: GMove | null = null;
   let winLine: number[] | null = null;
   let count = 0;
@@ -53,7 +53,7 @@ export function replayGomoku(moves: GMove[]): GomokuState {
     lastMove = m;
     count++;
     winLine = lineThrough(board, m.at);
-    turn = turn === 'b' ? 'w' : 'b';
+    turn = turn === 'black' ? 'white' : 'black';
   }
   let status: GameStatus = { kind: 'playing' };
   if (winLine) status = { kind: 'win', winner: board[winLine[0]]!, reason: '五子连珠' };
