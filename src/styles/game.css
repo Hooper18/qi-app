@@ -413,3 +413,34 @@
     stroke-dashoffset: 0;
   }
 }
+
+/* 暗色下黑方圆点要一圈浅描边才看得见 */
+@media (prefers-color-scheme: dark) {
+  .side-dot.black {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  }
+  .player-bar.active .side-dot.black {
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), 0 0 0 3px var(--bg), 0 0 0 4.5px var(--text-3);
+  }
+}
+
+/* 弹层里的列表行和标题左对齐 */
+.sheet .row-list {
+  margin: 0 -12px;
+}
+
+/* 升变选择器借用 .board-frame.chess 的棋子样式，但不要棋盘的正方形比例 */
+.board-frame.chess.promo-options {
+  aspect-ratio: auto;
+  overflow: visible;
+  border-radius: 0;
+}
+.promo-options .cg-wrap {
+  height: auto;
+}
+.promo-btn {
+  background: var(--surface-2);
+}
+.promo-btn:hover {
+  background: var(--line);
+}

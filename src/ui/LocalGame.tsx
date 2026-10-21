@@ -6,6 +6,7 @@ import { useLocalMatch } from '../game/useLocalMatch';
 import { undoFor } from '../game/undo';
 import { common, isLegal, replay } from '../game/view';
 import { GameTable } from './GameTable';
+import { Sheet } from './Sheet';
 import { IconFlip, IconRestart, IconUndo } from './icons';
 
 interface Props {
@@ -24,6 +25,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
   const c = common(view);
   const [thinking, setThinking] = useState(false);
   const [flipped, setFlipped] = useState(false);
+  const [askRestart, setAskRestart] = useState(false);
   const ai = mode === 'ai';
   const human = state.humanSide;
   const aiSide = otherColor(human);
@@ -75,6 +77,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
   }
 
   return (
+    <>
     <GameTable
       view={view}
       title={`${meta.name} · ${ai ? '人机' : '同屏'}`}
@@ -104,9 +107,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
           </button>
           <button
             className="action"
-            onClick={() => {
-              if (moves.length === 0 || c.status.kind !== 'playing' || window.confirm('重新开始这一局？')) restart(false);
-            }}
+            onClick={() => (moves.length === 0 || c.status.kind !== 'playing' ? restart(false) : setAskRestart(true))}
           >
             <IconRestart />
             <span>重开</span>
@@ -114,5 +115,24 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
         </>
       }
     />
+    <Sheet open={askRestart} onClose={() => setAskRestart(false)}>
+      <h2 className="sheet-title">重新开始这一局？</h2>
+      <p className="sheet-sub">当前棋局会被清空。</p>
+      <div className="sheet-actions">
+        <button className="btn btn-ghost" onClick={() => setAskRestart(false)}>
+          取消
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            setAskRestart(false);
+            restart(false);
+          }}
+        >
+          重新开始
+        </button>
+      </div>
+    </Sheet>
+    </>
   );
 }
