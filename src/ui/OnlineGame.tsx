@@ -75,7 +75,8 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
   if (playing) hint = c.turn === me ? (c.check ? '被将军了，轮到你' : '轮到你了') : '等对方走…';
   const resultTitle = status.kind === 'win' ? (status.winner === me ? '你赢了' : '对方赢了') : '和棋';
   const myMoves = state.moves.filter((_, i) => (i % 2 === 0 ? meta.firstSide : otherColor(meta.firstSide)) === me).length;
-  const offline = room.conn !== 'connected';
+  const offline = room.conn === 'offline';
+  const connecting = room.conn === 'connecting';
 
   return (
     <>
@@ -85,7 +86,7 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
         status={status}
         canMove={playing ? me : null}
         orientation={me}
-        top={{ side: opp, name: '对方', status: !offline && room.peers === 0 ? '未进入' : undefined }}
+        top={{ side: opp, name: '对方', status: room.conn === 'connected' && room.peers === 0 ? '未进入' : undefined }}
         bottom={{ side: me, name: `我（${meta.sideName[me]}）` }}
         hint={hint}
         faceAllowed={false}
@@ -97,7 +98,7 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
               房间号 <b>{code}</b>
             </span>
             <span className={`conn ${offline ? 'off' : room.peers > 0 ? 'on' : 'wait'}`}>
-              {offline ? '连接中断，正在重连' : room.peers > 0 ? '对方在线' : '把房间号发给对方'}
+              {offline ? '连接中断，正在重连' : connecting ? '正在连接…' : room.peers > 0 ? '对方在线' : '把房间号发给对方'}
             </span>
           </div>
         }

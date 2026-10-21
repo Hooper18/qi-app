@@ -154,6 +154,7 @@
 }
 .side-dot.white {
   background: #f4f2ec;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
 }
 .side-dot.black {
   background: #1d1d1d;
@@ -163,6 +164,9 @@
 }
 .player-bar.active .side-dot {
   box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--text-3);
+}
+.player-bar.active .side-dot.white {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28), 0 0 0 3px var(--bg), 0 0 0 4.5px var(--text-3);
 }
 .player-main {
   flex: 1;
