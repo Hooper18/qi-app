@@ -2,7 +2,7 @@
 
 两个人玩的棋：中国象棋、国际象棋、五子棋。手机优先，支持人机、同屏、联机三种模式，落子两步确认。
 
-- 网页版：https://tuchenguang.com/qi/
+- 网页版：https://chess.tuchenguang.com （Vercel 项目 tusts/qi-app，push main 自动部署）
 - 安卓：主站下载栏（https://tuchenguang.com/apps）
 
 ## 用到的开源项目
