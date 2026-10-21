@@ -1,0 +1,15 @@
+/* 中国象棋棋子：Kadagaden/chess-pieces 的 gmchess 木纹套（CC-BY-4.0） */
+.board-frame.xiangqi .cg-wrap piece.k-piece.white { --img: url("../assets/xiangqi/red_king.svg"); }
+.board-frame.xiangqi .cg-wrap piece.k-piece.black { --img: url("../assets/xiangqi/black_king.svg"); }
+.board-frame.xiangqi .cg-wrap piece.a-piece.white { --img: url("../assets/xiangqi/red_advisor.svg"); }
+.board-frame.xiangqi .cg-wrap piece.a-piece.black { --img: url("../assets/xiangqi/black_advisor.svg"); }
+.board-frame.xiangqi .cg-wrap piece.b-piece.white { --img: url("../assets/xiangqi/red_bishop.svg"); }
+.board-frame.xiangqi .cg-wrap piece.b-piece.black { --img: url("../assets/xiangqi/black_bishop.svg"); }
+.board-frame.xiangqi .cg-wrap piece.n-piece.white { --img: url("../assets/xiangqi/red_knight.svg"); }
+.board-frame.xiangqi .cg-wrap piece.n-piece.black { --img: url("../assets/xiangqi/black_knight.svg"); }
+.board-frame.xiangqi .cg-wrap piece.r-piece.white { --img: url("../assets/xiangqi/red_rook.svg"); }
+.board-frame.xiangqi .cg-wrap piece.r-piece.black { --img: url("../assets/xiangqi/black_rook.svg"); }
+.board-frame.xiangqi .cg-wrap piece.c-piece.white { --img: url("../assets/xiangqi/red_cannon.svg"); }
+.board-frame.xiangqi .cg-wrap piece.c-piece.black { --img: url("../assets/xiangqi/black_cannon.svg"); }
+.board-frame.xiangqi .cg-wrap piece.p-piece.white { --img: url("../assets/xiangqi/red_pawn.svg"); }
+.board-frame.xiangqi .cg-wrap piece.p-piece.black { --img: url("../assets/xiangqi/black_pawn.svg"); }

@@ -1,0 +1,411 @@
+/* ---------- 首页 ---------- */
+.home-head {
+  padding: 28px 12px 28px;
+}
+.home-head h1 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+}
+.home-head p {
+  margin: 2px 0 0;
+  color: var(--text-2);
+  font-size: 14px;
+}
+.thumb {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  object-fit: contain;
+}
+.home-foot {
+  margin-top: auto;
+  padding-top: 32px;
+  display: flex;
+  justify-content: center;
+}
+.home-foot .btn {
+  color: var(--text-2);
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.resume-list {
+  margin-bottom: 4px;
+}
+.sheet-divider {
+  height: 1px;
+  background: var(--line);
+  margin: 8px 12px;
+}
+.sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}
+.sheet-actions .btn-primary {
+  min-width: 112px;
+}
+
+/* ---------- 对局页 ---------- */
+.game-page {
+  --ar: 1;
+  padding-left: 12px;
+  padding-right: 12px;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.game-page.xiangqi {
+  --ar: 0.9;
+}
+.game-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  flex: none;
+}
+.game-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.room-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 4px 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-2);
+  flex: none;
+}
+.room-banner b {
+  color: var(--text);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  font-size: 15px;
+}
+.conn::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: 1px;
+  background: var(--text-3);
+}
+.conn.on::before {
+  background: #3f9b5a;
+}
+.conn.off::before {
+  background: var(--danger);
+}
+
+.table {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.board-area {
+  width: min(100%, calc((100dvh - 268px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * var(--ar)));
+  margin: 0 auto;
+}
+.player-bar,
+.board-area {
+  max-width: 100%;
+}
+
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 6px;
+  width: min(100%, calc((100dvh - 268px) * var(--ar)));
+  margin: 0 auto;
+  color: var(--text-2);
+  transition: color 0.2s;
+}
+.player-bar.active {
+  color: var(--text);
+}
+.player-bar.flipped {
+  transform: rotate(180deg);
+}
+.side-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: none;
+  box-shadow: 0 0 0 1px var(--line);
+  transition: box-shadow 0.2s;
+}
+.side-dot.white {
+  background: #f4f2ec;
+}
+.side-dot.black {
+  background: #1d1d1d;
+}
+.side-dot.xiangqi.white {
+  background: var(--red-side);
+}
+.player-bar.active .side-dot {
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4.5px var(--text-3);
+}
+.player-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  white-space: nowrap;
+}
+.player-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.player-status {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.player-bar.active .player-status {
+  animation: pending-breathe 1.4s ease-in-out infinite;
+}
+.captured {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 1px 3px;
+  max-width: 55%;
+  font-size: 14px;
+  line-height: 1.2;
+  overflow: hidden;
+  max-height: 36px;
+}
+.captured.xiangqi.white {
+  color: var(--red-side);
+}
+.captured.xiangqi.black {
+  color: var(--text);
+}
+.captured.chess {
+  font-size: 17px;
+  color: var(--text-2);
+}
+
+.hint {
+  flex: none;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--text-2);
+  transition: color 0.2s;
+}
+.hint.pending {
+  color: var(--accent);
+  font-weight: 500;
+}
+.hint-result {
+  font-weight: 500;
+  color: var(--text);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+.hint-result:hover {
+  background: var(--surface);
+}
+
+.action-bar {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 0;
+}
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 72px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.3;
+  transition: background-color 0.15s, color 0.15s;
+}
+.action svg {
+  width: 22px;
+  height: 22px;
+}
+.action:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+.action:active:not(:disabled) {
+  background: var(--surface-2);
+}
+.action:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.result-sheet {
+  text-align: center;
+}
+.result-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 6px 0 2px;
+}
+.result-reason {
+  color: var(--text-2);
+  margin: 0;
+}
+.result-sheet .sheet-actions {
+  justify-content: center;
+}
+
+.waiting {
+  margin: auto;
+  max-width: 280px;
+  text-align: center;
+  color: var(--text-2);
+  font-size: 14px;
+  padding-bottom: 80px;
+}
+
+/* ---------- 升变选择 ---------- */
+.promo-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--scrim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in 0.15s ease-out;
+}
+.promo-card {
+  background: var(--sheet);
+  border-radius: 18px;
+  padding: 16px 16px 12px;
+}
+.promo-title {
+  font-size: 14px;
+  color: var(--text-2);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.promo-options .cg-wrap {
+  display: flex;
+  gap: 6px;
+}
+.promo-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  position: relative;
+  background: var(--surface);
+  transition: background-color 0.15s;
+}
+.promo-btn:hover {
+  background: var(--surface-2);
+}
+.promo-btn piece {
+  position: absolute;
+  inset: 6px;
+  width: auto;
+  height: auto;
+  transform: none;
+}
+
+/* ---------- 五子棋棋盘 ---------- */
+.board-frame.gomoku {
+  aspect-ratio: 1 / 1;
+}
+.gomoku-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.gomoku-svg.interactive {
+  cursor: pointer;
+}
+.gomoku-wood {
+  fill: #dcb57a;
+}
+.gomoku-grid line,
+.gomoku-border {
+  stroke: #5a4024;
+  stroke-width: 1.1;
+  fill: none;
+}
+.gomoku-border {
+  stroke-width: 2;
+}
+.gomoku-star {
+  fill: #5a4024;
+}
+.stone-drop {
+  animation: stone-drop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+@keyframes stone-drop {
+  from {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+.stone.pending {
+  opacity: 0.55;
+  animation: pending-breathe 1.4s ease-in-out infinite;
+}
+.last-dot.on-black {
+  fill: #f0ece2;
+}
+.last-dot.on-white {
+  fill: #222;
+}
+.win-line {
+  stroke: #c0392b;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-line 0.5s 0.15s ease-out forwards;
+  opacity: 0.85;
+}
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stone-drop,
+  .stone.pending,
+  .player-bar.active .player-status {
+    animation: none;
+  }
+  .win-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

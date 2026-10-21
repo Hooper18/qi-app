@@ -1,0 +1,136 @@
+/* chessgroundx 的皮肤：棋盘底图、可走点、最后一步、将军、待确认落子 */
+@import 'chessgroundx/assets/chessground.base.css';
+@import './chess-pieces.css';
+@import './xiangqi-pieces.css';
+
+.board-frame {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  touch-action: none;
+}
+
+.cg-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+.cg-wrap piece {
+  background-image: var(--img);
+  background-size: cover;
+}
+
+/* ---------- 国际象棋 ---------- */
+.board-frame.chess {
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.board-frame.chess .cg-wrap cg-board {
+  background-color: #b58863;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cg fill='%23f0d9b5'%3E%3Crect width='1' height='1'/%3E%3Crect x='2' width='1' height='1'/%3E%3Crect x='4' width='1' height='1'/%3E%3Crect x='6' width='1' height='1'/%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3Crect x='3' y='1' width='1' height='1'/%3E%3Crect x='5' y='1' width='1' height='1'/%3E%3Crect x='7' y='1' width='1' height='1'/%3E%3Crect y='2' width='1' height='1'/%3E%3Crect x='2' y='2' width='1' height='1'/%3E%3Crect x='4' y='2' width='1' height='1'/%3E%3Crect x='6' y='2' width='1' height='1'/%3E%3Crect x='1' y='3' width='1' height='1'/%3E%3Crect x='3' y='3' width='1' height='1'/%3E%3Crect x='5' y='3' width='1' height='1'/%3E%3Crect x='7' y='3' width='1' height='1'/%3E%3Crect y='4' width='1' height='1'/%3E%3Crect x='2' y='4' width='1' height='1'/%3E%3Crect x='4' y='4' width='1' height='1'/%3E%3Crect x='6' y='4' width='1' height='1'/%3E%3Crect x='1' y='5' width='1' height='1'/%3E%3Crect x='3' y='5' width='1' height='1'/%3E%3Crect x='5' y='5' width='1' height='1'/%3E%3Crect x='7' y='5' width='1' height='1'/%3E%3Crect y='6' width='1' height='1'/%3E%3Crect x='2' y='6' width='1' height='1'/%3E%3Crect x='4' y='6' width='1' height='1'/%3E%3Crect x='6' y='6' width='1' height='1'/%3E%3Crect x='1' y='7' width='1' height='1'/%3E%3Crect x='3' y='7' width='1' height='1'/%3E%3Crect x='5' y='7' width='1' height='1'/%3E%3Crect x='7' y='7' width='1' height='1'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 100% 100%;
+}
+
+.board-frame.chess .cg-wrap square.last-move {
+  background-color: rgba(155, 199, 0, 0.36);
+}
+.board-frame.chess .cg-wrap square.selected {
+  background-color: rgba(20, 85, 30, 0.45);
+}
+.board-frame.chess .cg-wrap square.move-dest {
+  background: radial-gradient(rgba(20, 85, 30, 0.42) 19%, rgba(0, 0, 0, 0) 20%);
+}
+.board-frame.chess .cg-wrap square.move-dest.oc {
+  background: radial-gradient(transparent 0%, transparent 79%, rgba(20, 85, 30, 0.38) 80%);
+}
+.board-frame.chess .cg-wrap square.check {
+  background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0.9) 0%, rgba(231, 0, 0, 0.75) 25%, rgba(169, 0, 0, 0) 89%);
+}
+
+/* ---------- 中国象棋（9 x 10，棋子落在交叉点：底图的线正好穿过每格中心） ---------- */
+.board-frame.xiangqi {
+  aspect-ratio: 9 / 10;
+}
+
+.board-frame.xiangqi .cg-wrap cg-board {
+  background-image: url('../assets/xiangqi/board.svg');
+  background-size: 100% 100%;
+  border-radius: 4px;
+}
+
+.board-frame.xiangqi .cg-wrap square,
+.board-frame.xiangqi .cg-wrap piece {
+  width: calc(100% / 9);
+  height: 10%;
+}
+
+.board-frame.xiangqi .cg-wrap piece {
+  background-size: 92%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.board-frame.xiangqi .cg-wrap square {
+  border-radius: 50%;
+}
+.board-frame.xiangqi .cg-wrap square.last-move {
+  background: radial-gradient(circle, transparent 54%, rgba(30, 110, 200, 0.55) 56%, rgba(30, 110, 200, 0.55) 62%, transparent 64%);
+}
+.board-frame.xiangqi .cg-wrap square.selected {
+  background: radial-gradient(circle, rgba(30, 110, 200, 0.28) 60%, transparent 63%);
+}
+.board-frame.xiangqi .cg-wrap square.move-dest {
+  background: radial-gradient(circle, rgba(30, 110, 200, 0.62) 14%, transparent 16%);
+}
+.board-frame.xiangqi .cg-wrap square.move-dest.oc {
+  background: radial-gradient(circle, transparent 56%, rgba(30, 110, 200, 0.7) 58%, rgba(30, 110, 200, 0.7) 64%, transparent 66%);
+}
+.board-frame.xiangqi .cg-wrap square.check {
+  background: radial-gradient(circle, rgba(220, 30, 30, 0.75) 0%, rgba(220, 30, 30, 0.35) 48%, transparent 66%);
+}
+
+/* ---------- 待确认的落子 ---------- */
+.cg-wrap square.pending-from {
+  background: rgba(30, 110, 200, 0.16) !important;
+}
+.board-frame.chess .cg-wrap square.pending-to {
+  box-shadow: inset 0 0 0 3px rgba(30, 110, 200, 0.85);
+  animation: pending-breathe 1.4s ease-in-out infinite;
+}
+.board-frame.xiangqi .cg-wrap square.pending-to {
+  box-shadow: 0 0 0 3px rgba(30, 110, 200, 0.85);
+  animation: pending-breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes pending-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ---------- 对坐模式：黑方棋子倒过来，方便面对面 ---------- */
+.board-frame.face .cg-wrap piece.black {
+  background-image: none;
+}
+.board-frame.face .cg-wrap piece.black::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--img);
+  background-size: inherit;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cg-wrap square.pending-to {
+    animation: none;
+  }
+}

@@ -1,0 +1,173 @@
+// 对局桌面：三种模式共用。上下是双方信息条，中间棋盘，下面一行提示和操作按钮。
+import { type ReactNode, useEffect, useRef, useState } from 'react';
+import type { Key } from 'chessgroundx/types';
+import { CgBoard } from '../board/CgBoard';
+import { GomokuBoard } from '../board/GomokuBoard';
+import { PromotionPicker } from '../board/PromotionPicker';
+import { playEndSound, playMoveSound, vibrate } from '../core/feedback';
+import { useSettings } from '../core/settings';
+import { GAMES, type Color, type GameStatus } from '../core/types';
+import { keyToSq } from '../games/xiangqi/adapter';
+import { type AnyView, common } from '../game/view';
+import { IconBack, IconSettings } from './icons';
+import { PlayerBar, type Seat } from './PlayerBar';
+import { back } from './route';
+import { SettingsSheet } from './SettingsSheet';
+
+const NO_DESTS = new Map<Key, Key[]>();
+
+export interface GameTableProps {
+  view: AnyView;
+  title: string;
+  status: GameStatus; // 可能被"认输"覆盖，所以由外面给
+  canMove: Color | 'both' | null;
+  orientation: Color;
+  top: Seat;
+  bottom: Seat;
+  hint: string;
+  faceAllowed: boolean;
+  onMove: (move: string) => void;
+  actions: ReactNode;
+  result: ReactNode; // 结束面板里的按钮
+  resultTitle: string;
+  banner?: ReactNode; // 联机时的房间号/连接状态
+}
+
+export function GameTable(p: GameTableProps) {
+  const [settings] = useSettings();
+  const [showSettings, setShowSettings] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState(false);
+  const [promo, setPromo] = useState<{ orig: Key; dest: Key } | null>(null);
+  const [resultOpen, setResultOpen] = useState(false);
+  const [boardReset, setBoardReset] = useState(0);
+  const c = common(p.view);
+  const game = p.view.game;
+  const face = p.faceAllowed && settings.face && game !== 'gomoku';
+
+  // 落子音效 / 震动 / 结束音
+  const prev = useRef({ moveCount: c.moveCount, captures: c.captures, finished: p.status.kind !== 'playing' });
+  useEffect(() => {
+    const before = prev.current;
+    const finished = p.status.kind !== 'playing';
+    if (c.moveCount === before.moveCount + 1) {
+      playMoveSound(game, c.captures > before.captures);
+      vibrate(c.captures > before.captures ? 18 : 10);
+    }
+    if (finished && !before.finished) {
+      setResultOpen(true);
+      // 同屏模式总放胜利音；其他模式看下方（自己）是否赢了
+      const meWon = p.status.kind === 'win' && (p.canMove === 'both' || p.status.winner === p.bottom.side);
+      setTimeout(() => playEndSound(meWon), 260);
+    }
+    if (!finished) setResultOpen(false);
+    prev.current = { moveCount: c.moveCount, captures: c.captures, finished };
+  }, [c.moveCount, c.captures, p.status, game, p.canMove, p.bottom.side]);
+
+  const handleCgMove = (orig: Key, dest: Key) => {
+    if (p.view.game === 'chess') {
+      if (p.view.v.promotions.has(orig + dest)) {
+        setPromo({ orig, dest });
+        return;
+      }
+      p.onMove(orig + dest);
+    } else {
+      p.onMove(`${keyToSq(orig)}-${keyToSq(dest)}`);
+    }
+  };
+
+  const captured = (side: Color) => (p.view.game === 'gomoku' ? [] : p.view.v.captured[side]);
+  const playing = p.status.kind === 'playing';
+  const hint = pendingConfirm ? '再点一次确认落子' : p.hint;
+
+  return (
+    <div className={`page game-page ${game}`}>
+      <header className="game-head">
+        <button className="icon-btn" onClick={back} aria-label="返回">
+          <IconBack />
+        </button>
+        <div className="game-title">{p.title}</div>
+        <button className="icon-btn" onClick={() => setShowSettings(true)} aria-label="设置">
+          <IconSettings />
+        </button>
+      </header>
+      {p.banner}
+      <div className="table">
+        <PlayerBar game={game} seat={p.top} active={playing && c.turn === p.top.side} captured={captured(p.top.side)} flipped={face} />
+        <div className="board-area">
+          {p.view.game === 'gomoku' ? (
+            <GomokuBoard
+              board={p.view.v.board}
+              turn={p.view.v.turn}
+              lastMove={p.view.v.lastMove?.at ?? null}
+              winLine={p.view.v.winLine}
+              interactive={playing && (p.canMove === 'both' || p.canMove === c.turn)}
+              confirm={settings.confirm}
+              onPlace={(at) => p.onMove(String(at))}
+              onPendingChange={setPendingConfirm}
+            />
+          ) : (
+            <CgBoard
+              key={`${game}-${boardReset}`}
+              variant={p.view.game}
+              fen={p.view.v.fen}
+              turn={p.view.v.turn}
+              dests={playing ? p.view.v.dests : NO_DESTS}
+              lastMove={p.view.v.lastMove}
+              check={p.view.v.check}
+              orientation={p.orientation}
+              movable={playing ? (p.canMove === 'both' ? c.turn : p.canMove === c.turn ? c.turn : null) : null}
+              confirm={settings.confirm}
+              face={face}
+              onMove={handleCgMove}
+              onPendingChange={setPendingConfirm}
+            />
+          )}
+        </div>
+        <PlayerBar game={game} seat={p.bottom} active={playing && c.turn === p.bottom.side} captured={captured(p.bottom.side)} />
+      </div>
+      <div className={`hint${pendingConfirm ? ' pending' : ''}${!playing ? ' over' : ''}`} aria-live="polite">
+        {!playing && !resultOpen ? (
+          <button className="hint-result" onClick={() => setResultOpen(true)}>
+            {p.resultTitle}
+          </button>
+        ) : (
+          hint
+        )}
+      </div>
+      <nav className="action-bar">{p.actions}</nav>
+
+      {promo && p.view.game === 'chess' && (
+        <PromotionPicker
+          color={p.view.v.turn}
+          onPick={(t) => {
+            p.onMove(promo.orig + promo.dest + t);
+            setPromo(null);
+          }}
+          onCancel={() => {
+            setPromo(null);
+            setBoardReset((n) => n + 1); // 取消升变：棋盘回到落子前
+          }}
+        />
+      )}
+      {resultOpen && !playing && (
+        <>
+          <div className="scrim" onClick={() => setResultOpen(false)} />
+          <div className="sheet result-sheet" role="dialog" aria-modal="true">
+            <div className="sheet-handle" />
+            <h2 className="result-title">{p.resultTitle}</h2>
+            <p className="result-reason">{p.status.kind === 'playing' ? '' : p.status.reason}</p>
+            <div className="sheet-actions">
+              <button className="btn btn-ghost" onClick={() => setResultOpen(false)}>
+                看看棋盘
+              </button>
+              {p.result}
+            </div>
+          </div>
+        </>
+      )}
+      <SettingsSheet open={showSettings} onClose={() => setShowSettings(false)} showFace={p.faceAllowed && game !== 'gomoku'} />
+    </div>
+  );
+}
+
+export const sideName = (game: AnyView['game'], side: Color) => GAMES[game].sideName[side];

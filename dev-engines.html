@@ -1,0 +1,14 @@
+<!doctype html><html><body><pre id="o"></pre>
+<script type="module">
+import { aiBestMove } from '/src/ai/engines.ts';
+const o = document.getElementById('o');
+window.results = [];
+const t = async (name, game, moves, level) => { const t0 = performance.now(); const m = await aiBestMove(game, moves, level); const r = `${name}: ${m} (${Math.round(performance.now() - t0)}ms)`; window.results.push(r); o.textContent += r + '\n'; };
+await t('chess L1', 'chess', ['e2e4'], 1);
+await t('chess L3', 'chess', ['e2e4', 'e7e5', 'd1h5', 'b8c6', 'f1c4', 'g8f6'], 3);
+await t('xq L1', 'xiangqi', ['70-67'], 1);
+await t('xq L3', 'xiangqi', ['70-67'], 3);
+await t('gomoku L1', 'gomoku', ['112'], 1);
+await t('gomoku L3 block four', 'gomoku', ['112', '0', '113', '1', '114', '2', '115'], 3);
+window.done = true;
+</script></body></html>

@@ -7,6 +7,6 @@ export default defineConfig({
   plugins: [react()],
   server: { host: true, port: 5188 },
   build: { sourcemap: false },
-  worker: { format: 'es' },
+  worker: { format: 'iife' },
   test: { include: ['src/**/*.test.ts'], testTimeout: 60000 },
 });
