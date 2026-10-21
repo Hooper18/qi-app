@@ -444,3 +444,10 @@
 .promo-btn:hover {
   background: var(--line);
 }
+
+.credits {
+  margin: 20px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-3);
+}

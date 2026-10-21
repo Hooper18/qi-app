@@ -25,6 +25,10 @@ export function SettingsSheet({ open, onClose, showFace }: { open: boolean; onCl
             </div>
           ))}
       </div>
+      <p className="credits">
+        对弈 v{__APP_VERSION__}。棋盘 chessgroundx（lichess），规则 chess.js，电脑 Stockfish、象棋小巫师、Rapfi，
+        象棋棋子与棋盘图 Kadagaden/chess-pieces（CC BY 4.0），国际象棋棋子 cburnett。本应用以 GPL-3.0 开源。
+      </p>
     </Sheet>
   );
 }
