@@ -8,6 +8,15 @@
     <meta name="theme-color" content="#212121" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <title>对弈</title>
+    <script>
+      // 挂在子路径（/qi）下时补上结尾斜杠，否则相对路径的资源和引擎文件会解析到站点根目录
+      (function () {
+        var p = location.pathname;
+        if (location.protocol.indexOf('http') === 0 && p.slice(-1) !== '/' && p.split('/').pop().indexOf('.') < 0) {
+          location.replace(p + '/' + location.search + location.hash);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

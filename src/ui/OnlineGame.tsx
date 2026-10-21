@@ -1,7 +1,7 @@
 // 联机对战
 import { useEffect, useMemo, useState } from 'react';
 import { GAMES, otherColor, type GameId, type GameStatus } from '../core/types';
-import { onlineAvailable } from '../online/room';
+import { onlineAvailable } from '../online/code';
 import { useRoom } from '../online/useRoom';
 import { undoFor } from '../game/undo';
 import { common, isLegal, replay } from '../game/view';
@@ -10,7 +10,7 @@ import { IconBack, IconFlag, IconRestart, IconUndo } from './icons';
 import { back } from './route';
 import { Sheet } from './Sheet';
 
-export function OnlineGame({ code, createGame }: { code: string; createGame: GameId | null }) {
+export default function OnlineGame({ code, createGame }: { code: string; createGame: GameId | null }) {
   if (!onlineAvailable) return <Waiting code={code} text="这个版本没有配置联机服务" />;
   return <OnlineRoom code={code} createGame={createGame} />;
 }

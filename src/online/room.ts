@@ -21,17 +21,12 @@ export type RoomMsg =
 
 const URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
-export const onlineAvailable = Boolean(URL && KEY);
 
 let client: SupabaseClient | null = null;
 const sb = () =>
   (client ??= createClient(URL!, KEY!, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
   }));
-
-export function newRoomCode(): string {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
 
 export function clientId(): string {
   let id = load<string>('client-id', '');

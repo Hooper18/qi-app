@@ -13,6 +13,8 @@
   "dependencies": {
     "@capacitor/app": "^6.0.3",
     "@capacitor/core": "^6.2.2",
+    "@capacitor/haptics": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.3",
     "@supabase/supabase-js": "^2.118.0",
     "chess.js": "^1.4.0",
     "chessgroundx": "^11.0.0",

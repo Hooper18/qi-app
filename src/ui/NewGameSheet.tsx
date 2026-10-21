@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GAMES, LEVEL_NAME, type Color, type GameId, type Level } from '../core/types';
 import { loadSave } from '../game/useLocalMatch';
-import { newRoomCode } from '../online/room';
+import { newRoomCode } from '../online/code';
 import { IconChevron } from './icons';
 import { go } from './route';
 import { Segmented, Sheet } from './Sheet';

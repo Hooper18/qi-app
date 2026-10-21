@@ -1,8 +1,11 @@
+import { lazy, Suspense } from 'react';
 import { GAMES, type Color, type GameId, type Level } from './core/types';
 import { Home } from './ui/Home';
 import { LocalGame } from './ui/LocalGame';
-import { OnlineGame } from './ui/OnlineGame';
 import { useRoute } from './ui/route';
+
+// 联机页按需加载：supabase 库只有联机才用得到
+const OnlineGame = lazy(() => import('./ui/OnlineGame'));
 
 const isGame = (g: string | null): g is GameId => !!g && g in GAMES;
 
@@ -30,7 +33,11 @@ export function App() {
   }
   const room = /^\/room\/(\d{4})$/.exec(path);
   if (room) {
-    return <OnlineGame key={room[1]} code={room[1]} createGame={params.get('host') === '1' && isGame(game) ? game : null} />;
+    return (
+      <Suspense fallback={null}>
+        <OnlineGame key={room[1]} code={room[1]} createGame={params.get('host') === '1' && isGame(game) ? game : null} />
+      </Suspense>
+    );
   }
   return <Home />;
 }

@@ -1,4 +1,5 @@
 // 落子音效（WebAudio 现场合成，不用音频文件）+ 短震动。
+import { isNative, nativeTap } from './native';
 import { getSettings } from './settings';
 import type { GameId } from './types';
 
@@ -80,6 +81,10 @@ export function playEndSound(win: boolean) {
 
 export function vibrate(ms = 12) {
   if (!getSettings().vibrate) return;
+  if (isNative) {
+    nativeTap(ms > 14);
+    return;
+  }
   try {
     navigator.vibrate?.(ms);
   } catch {
