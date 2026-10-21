@@ -1,0 +1,15 @@
+node_modules
+dist
+*.local
+.env
+.env.*
+!.env.example
+coverage/
+android/key.properties
+android/**/*.jks
+android/**/*.keystore
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/captures/
