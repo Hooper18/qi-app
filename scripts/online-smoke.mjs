@@ -1,7 +1,7 @@
 // 两个无头页面模拟两台手机：A 建五子棋房间，B 用房间号加入，A 落子后检查 B 能看到；再测悔棋请求/同意
 import { chromium } from 'playwright';
 const code = String(Math.floor(1000 + Math.random() * 9000));
-const base = 'http://localhost:5188/';
+const base = process.argv[2] ?? 'http://localhost:5188/';
 const b = await chromium.launch();
 const mk = async (name) => {
   const ctx = await b.newContext({ viewport: { width: 375, height: 812 } });
