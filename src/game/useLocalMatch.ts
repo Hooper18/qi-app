@@ -2,11 +2,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { load, remove, save } from '../core/storage';
 import type { Color, GameId, Level, Mode } from '../core/types';
+import { nextTimes } from './clock';
 
 export interface LocalSave {
   moves: string[];
   humanSide: Color; // 人机模式里人执哪方；同屏模式无意义
   level: Level;
+  times?: number[]; // 每一步用了多少毫秒，和 moves 一一对应（旧存档没有）
   updatedAt: number;
 }
 
@@ -27,12 +29,23 @@ export function useLocalMatch(game: GameId, mode: 'ai' | 'local', init: { humanS
     else save(saveKey(game, mode), state);
   }, [game, mode, state]);
 
-  const setMoves = useCallback((moves: string[]) => setState((s) => ({ ...s, moves, updatedAt: Date.now() })), []);
+  // elapsed：新走的这一步用了多久（悔棋/重开时忽略）
+  const setMoves = useCallback(
+    (moves: string[], elapsed = 0) =>
+      setState((s) => ({
+        ...s,
+        moves,
+        times: nextTimes(s.moves.length, s.times ?? [], moves.length, elapsed),
+        updatedAt: Date.now(),
+      })),
+    [],
+  );
   const restart = useCallback(
     (swapSides: boolean) =>
       setState((s) => ({
         ...s,
         moves: [],
+        times: [],
         humanSide: swapSides ? (s.humanSide === 'white' ? 'black' : 'white') : s.humanSide,
         updatedAt: Date.now(),
       })),

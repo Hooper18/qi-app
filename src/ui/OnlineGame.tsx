@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { GAMES, otherColor, type GameId, type GameStatus } from '../core/types';
 import { onlineAvailable } from '../online/code';
 import { useRoom } from '../online/useRoom';
+import { nextTimes, useTurnClock } from '../game/clock';
 import { undoFor } from '../game/undo';
 import { common, isLegal, replay } from '../game/view';
 import { GameTable } from './GameTable';
@@ -45,6 +46,8 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
   }, [room.notice, room.clearNotice]);
 
   const state = room.state;
+  // 每次房间状态变化（任何一方落子、悔棋、重开）都从 0 开始计这一手
+  const elapsed = useTurnClock(state?.rev);
   const view = useMemo(() => (state ? replay(state.game, state.moves) : null), [state]);
 
   if (!state || !view || !room.mySide) {
@@ -67,9 +70,13 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
   const playing = status.kind === 'playing';
 
   const onMove = (mv: string) => {
-    if (playing && c.turn === me && isLegal(view, mv)) room.commit({ ...state, moves: [...state.moves, mv] });
+    if (playing && c.turn === me && isLegal(view, mv)) room.commit({
+        ...state,
+        moves: [...state.moves, mv],
+        times: nextTimes(state.moves.length, state.times ?? [], state.moves.length + 1, elapsed()),
+      });
   };
-  const restartState = () => room.commit({ ...state, moves: [], resigned: null, hostSide: otherColor(state.hostSide) });
+  const restartState = () => room.commit({ ...state, moves: [], times: [], resigned: null, hostSide: otherColor(state.hostSide) });
 
   let hint = '';
   if (playing) hint = c.turn === me ? (c.check ? '被将军了，轮到你' : '轮到你了') : '等对方走…';
@@ -91,6 +98,7 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
         hint={hint}
         faceAllowed={false}
         onMove={onMove}
+        clock={{ times: state.times ?? [], elapsed }}
         resultTitle={resultTitle}
         banner={
           <div className="room-banner">
@@ -144,7 +152,10 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
             className="btn btn-primary"
             onClick={() =>
               room.answer(true, () => {
-                if (room.incoming?.kind === 'undo') room.commit({ ...state, moves: undoFor(state.game, state.moves, opp) });
+                if (room.incoming?.kind === 'undo') {
+                  const moves = undoFor(state.game, state.moves, opp);
+                  room.commit({ ...state, moves, times: (state.times ?? []).slice(0, moves.length) });
+                }
                 else restartState();
               })
             }

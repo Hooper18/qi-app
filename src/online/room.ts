@@ -10,6 +10,7 @@ export interface RoomState {
   hostSide: Color; // 房主执哪方（每次重开互换先后手）
   moves: string[];
   resigned: Color | null;
+  times?: number[]; // 每一步用了多少毫秒（走子的一方自己计时后写进来）
 }
 
 export type AskKind = 'undo' | 'restart';

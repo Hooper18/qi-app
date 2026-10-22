@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { aiBestMove, cancelAI } from '../ai/engines';
 import { GAMES, LEVEL_NAME, otherColor, type Color, type GameId, type Level } from '../core/types';
+import { useTurnClock } from '../game/clock';
 import { useLocalMatch } from '../game/useLocalMatch';
 import { undoFor } from '../game/undo';
 import { common, isLegal, replay } from '../game/view';
@@ -29,6 +30,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
   const ai = mode === 'ai';
   const human = state.humanSide;
   const aiSide = otherColor(human);
+  const elapsed = useTurnClock(state.updatedAt);
 
   // 轮到电脑就让它想
   useEffect(() => {
@@ -44,7 +46,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
       setTimeout(() => {
         if (stale) return;
         setThinking(false);
-        if (mv && isLegal(view, mv)) setMoves([...moves, mv]);
+        if (mv && isLegal(view, mv)) setMoves([...moves, mv], elapsed());
       }, wait);
     });
     return () => {
@@ -52,10 +54,10 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
       if (!done) cancelAI(game);
       setThinking(false);
     };
-  }, [ai, c.status.kind, c.turn, human, game, moves, state.level, view, setMoves]);
+  }, [ai, c.status.kind, c.turn, human, game, moves, state.level, view, setMoves, elapsed]);
 
   const onMove = (mv: string) => {
-    if (isLegal(view, mv)) setMoves([...moves, mv]);
+    if (isLegal(view, mv)) setMoves([...moves, mv], elapsed());
   };
 
   const undo = () => setMoves(ai ? undoFor(game, moves, human) : moves.slice(0, -1));
@@ -89,6 +91,7 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
       hint={hint}
       faceAllowed={!ai && !flipped}
       onMove={onMove}
+      clock={{ times: state.times ?? [], elapsed }}
       resultTitle={resultTitle}
       result={
         <button className="btn btn-primary" onClick={() => restart(ai)}>

@@ -6,8 +6,9 @@ import { GomokuBoard } from '../board/GomokuBoard';
 import { PromotionPicker } from '../board/PromotionPicker';
 import { playEndSound, playMoveSound, vibrate } from '../core/feedback';
 import { useSettings } from '../core/settings';
-import { GAMES, type Color, type GameStatus } from '../core/types';
+import { GAMES, otherColor, type Color, type GameStatus } from '../core/types';
 import { keyToSq } from '../games/xiangqi/adapter';
+import { formatClock, totalsBySide } from '../game/clock';
 import { type AnyView, common } from '../game/view';
 import { IconBack, IconSettings } from './icons';
 import { PlayerBar, type Seat } from './PlayerBar';
@@ -31,6 +32,7 @@ export interface GameTableProps {
   result: ReactNode; // 结束面板里的按钮
   resultTitle: string;
   banner?: ReactNode; // 联机时的房间号/连接状态
+  clock: { times: number[]; elapsed: () => number }; // 每步用时 + 当前这手已用时间
 }
 
 export function GameTable(p: GameTableProps) {
@@ -104,6 +106,17 @@ export function GameTable(p: GameTableProps) {
     }
   };
 
+  // 用时每秒刷新一次；走的这一方实时走字
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (p.status.kind !== 'playing') return;
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [p.status.kind]);
+  const totals = totalsBySide(game, p.clock.times);
+  if (p.status.kind === 'playing') totals[c.turn] += p.clock.elapsed();
+  const timeOf = (side: Color) => formatClock(totals[side]);
+
   const captured = (side: Color) => (p.view.game === 'gomoku' ? [] : p.view.v.captured[side]);
   const playing = p.status.kind === 'playing';
   const hint = pendingConfirm ? '再点一次确认落子' : p.hint;
@@ -121,7 +134,14 @@ export function GameTable(p: GameTableProps) {
       </header>
       {p.banner}
       <div className="table">
-        <PlayerBar game={game} seat={p.top} active={playing && c.turn === p.top.side} captured={captured(p.top.side)} flipped={face} />
+        <PlayerBar
+          game={game}
+          seat={p.top}
+          active={playing && c.turn === p.top.side}
+          captured={captured(p.top.side)}
+          time={timeOf(p.top.side)}
+          flipped={face}
+        />
         <div className="board-area">
           {p.view.game === 'gomoku' ? (
             <GomokuBoard
@@ -159,7 +179,13 @@ export function GameTable(p: GameTableProps) {
             </div>
           )}
         </div>
-        <PlayerBar game={game} seat={p.bottom} active={playing && c.turn === p.bottom.side} captured={captured(p.bottom.side)} />
+        <PlayerBar
+          game={game}
+          seat={p.bottom}
+          active={playing && c.turn === p.bottom.side}
+          captured={captured(p.bottom.side)}
+          time={timeOf(p.bottom.side)}
+        />
       </div>
       <div className={`hint${pendingConfirm ? ' pending' : ''}${!playing ? ' over' : ''}`} aria-live="polite">
         {!playing && !resultOpen ? (
@@ -192,6 +218,10 @@ export function GameTable(p: GameTableProps) {
             <div className="sheet-handle" />
             <h2 className="result-title">{p.resultTitle}</h2>
             <p className="result-reason">{p.status.kind === 'playing' ? '' : p.status.reason}</p>
+            <p className="result-times">
+              用时 {GAMES[game].sideName[GAMES[game].firstSide]} {timeOf(GAMES[game].firstSide)} ·{' '}
+              {GAMES[game].sideName[otherColor(GAMES[game].firstSide)]} {timeOf(otherColor(GAMES[game].firstSide))}
+            </p>
             <div className="sheet-actions">
               <button className="btn btn-ghost" onClick={() => setResultOpen(false)}>
                 看看棋盘

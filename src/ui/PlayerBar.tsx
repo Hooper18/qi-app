@@ -19,12 +19,14 @@ export function PlayerBar({
   seat,
   active,
   captured,
+  time,
   flipped,
 }: {
   game: GameId;
   seat: Seat;
   active: boolean;
   captured: string[];
+  time: string;
   flipped?: boolean;
 }) {
   const opp: Color = seat.side === 'white' ? 'black' : 'white';
@@ -43,6 +45,9 @@ export function PlayerBar({
           ))}
         </div>
       )}
+      <span className="player-time" aria-label="总用时">
+        {time}
+      </span>
     </div>
   );
 }
