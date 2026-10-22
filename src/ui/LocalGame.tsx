@@ -1,10 +1,11 @@
 // 人机对战 / 同屏对战
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { aiBestMove, cancelAI } from '../ai/engines';
 import { GAMES, LEVEL_NAME, otherColor, type Color, type GameId, type Level } from '../core/types';
 import { useTurnClock } from '../game/clock';
 import { useLocalMatch } from '../game/useLocalMatch';
-import { undoFor } from '../game/undo';
+import { IDLE_NUDGE_MS, aiReaction, idleNudge } from '../emote/aiReact';
+import { moverOf, undoFor } from '../game/undo';
 import { common, isLegal, replay } from '../game/view';
 import { GameTable } from './GameTable';
 import { Sheet } from './Sheet';
@@ -56,6 +57,28 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
     };
   }, [ai, c.status.kind, c.turn, human, game, moves, state.level, view, setMoves, elapsed]);
 
+  // 电脑的表情：看刚走的一步发生了什么；轮到人想太久也会催一下
+  const [aiEmote, setAiEmote] = useState<{ side: Color; id: string; key: number } | null>(null);
+  const seen = useRef({ count: c.moveCount, captured: { white: 0, black: 0 } as Record<Color, number> });
+  useEffect(() => {
+    const capturedNow = (side: Color) => (view.game === 'gomoku' ? [] : view.v.captured[side]);
+    const before = seen.current;
+    seen.current = { count: c.moveCount, captured: { white: capturedNow('white').length, black: capturedNow('black').length } };
+    if (!ai || c.moveCount !== before.count + 1) return;
+    const mover = moverOf(game, c.moveCount - 1);
+    const list = capturedNow(mover);
+    const captured = list.length > before.captured[mover] ? list[list.length - 1] : null;
+    const id = aiReaction({ mover, aiSide, captured, check: c.check, status: c.status });
+    if (!id) return;
+    const t = setTimeout(() => setAiEmote({ side: aiSide, id, key: Date.now() }), 700);
+    return () => clearTimeout(t);
+  }, [ai, aiSide, c.check, c.moveCount, c.status, game, view]);
+  useEffect(() => {
+    if (!ai || c.status.kind !== 'playing' || c.turn !== human) return;
+    const t = setTimeout(() => setAiEmote({ side: aiSide, id: idleNudge(), key: Date.now() }), IDLE_NUDGE_MS);
+    return () => clearTimeout(t);
+  }, [ai, aiSide, c.status.kind, c.turn, human, moves.length]);
+
   const onMove = (mv: string) => {
     if (isLegal(view, mv)) setMoves([...moves, mv], elapsed());
   };
@@ -92,6 +115,8 @@ export function LocalGame({ game, mode, humanSide, level, resume }: Props) {
       faceAllowed={!ai && !flipped}
       onMove={onMove}
       clock={{ times: state.times ?? [], elapsed }}
+      emoteSides={ai ? [human] : ['white', 'black']}
+      emoteIn={aiEmote}
       resultTitle={resultTitle}
       result={
         <button className="btn btn-primary" onClick={() => restart(ai)}>

@@ -91,3 +91,41 @@ export function vibrate(ms = 12) {
     /* 不支持就算了 */
   }
 }
+
+// 表情弹出时的"啵"一声：两个很短的上滑音
+export function playEmoteSound() {
+  const ac = audio();
+  if (!ac) return;
+  [0, 0.07].forEach((delay, i) => {
+    const t = ac.currentTime + delay;
+    const o = ac.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(i === 0 ? 520 : 780, t);
+    o.frequency.exponentialRampToValueAtTime(i === 0 ? 900 : 1240, t + 0.08);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.14, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+    o.connect(g).connect(ac.destination);
+    o.start(t);
+    o.stop(t + 0.16);
+  });
+}
+
+// 快捷语朗读：用系统自带的中文语音，没有就安静地跳过
+export function speak(text: string) {
+  if (!getSettings().speakPhrases || !getSettings().sound) return;
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 1.1;
+    const zh = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith('zh'));
+    if (zh) u.voice = zh;
+    synth.speak(u);
+  } catch {
+    /* 不支持就算了 */
+  }
+}

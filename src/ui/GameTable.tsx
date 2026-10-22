@@ -4,10 +4,13 @@ import type { Key } from 'chessgroundx/types';
 import { CgBoard } from '../board/CgBoard';
 import { GomokuBoard } from '../board/GomokuBoard';
 import { PromotionPicker } from '../board/PromotionPicker';
-import { playEndSound, playMoveSound, vibrate } from '../core/feedback';
+import { playEmoteSound, playEndSound, playMoveSound, speak, vibrate } from '../core/feedback';
 import { useSettings } from '../core/settings';
 import { GAMES, otherColor, type Color, type GameStatus } from '../core/types';
 import { keyToSq } from '../games/xiangqi/adapter';
+import { isPhrase, phraseText } from '../emote/catalog';
+import { EmoteBubble, type EmoteShow } from '../emote/EmoteBubble';
+import { EmotePicker } from '../emote/EmotePicker';
 import { formatClock, totalsBySide } from '../game/clock';
 import { type AnyView, common } from '../game/view';
 import { IconBack, IconSettings } from './icons';
@@ -33,7 +36,13 @@ export interface GameTableProps {
   resultTitle: string;
   banner?: ReactNode; // 联机时的房间号/连接状态
   clock: { times: number[]; elapsed: () => number }; // 每步用时 + 当前这手已用时间
+  emoteSides: Color[]; // 本机可以以哪一方的身份发表情
+  onEmote?: (side: Color, id: string) => void; // 本机发出表情（联机时转发给对方）
+  emoteIn?: { side: Color; id: string; key: number } | null; // 对方 / 电脑发来的表情
 }
+
+const BUBBLE_MS = 2600;
+const EMOTE_COOLDOWN_MS = 1200;
 
 export function GameTable(p: GameTableProps) {
   const [settings] = useSettings();
@@ -46,8 +55,43 @@ export function GameTable(p: GameTableProps) {
   const [banner, setBanner] = useState<{ text: string; tone: 'check' | 'win' | 'lose' | 'draw'; key: number } | null>(null);
   const [toast, setToast] = useState<{ text: string; key: number } | null>(null);
   const showToast = (text: string) => setToast({ text, key: Date.now() });
+  const [bubbles, setBubbles] = useState<Partial<Record<Color, EmoteShow>>>({});
+  const [picker, setPicker] = useState<Color | null>(null);
+  const bubbleTimers = useRef<Partial<Record<Color, ReturnType<typeof setTimeout>>>>({});
+  const lastSent = useRef(0);
   const c = common(p.view);
   const game = p.view.game;
+
+  const showEmote = (side: Color, id: string) => {
+    setBubbles((b) => ({ ...b, [side]: { id, key: Date.now() } }));
+    clearTimeout(bubbleTimers.current[side]);
+    bubbleTimers.current[side] = setTimeout(() => setBubbles((b) => ({ ...b, [side]: undefined })), BUBBLE_MS);
+    playEmoteSound();
+    if (isPhrase(id)) speak(phraseText(id));
+  };
+
+  const sendEmote = (side: Color, id: string) => {
+    setPicker(null);
+    if (Date.now() - lastSent.current < EMOTE_COOLDOWN_MS) {
+      showToast('慢一点～');
+      return;
+    }
+    lastSent.current = Date.now();
+    showEmote(side, id);
+    p.onEmote?.(side, id);
+  };
+
+  // 对方 / 电脑发来的表情
+  useEffect(() => {
+    if (!p.emoteIn || settings.muteEmotes) return;
+    showEmote(p.emoteIn.side, p.emoteIn.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.emoteIn?.key]);
+
+  useEffect(() => {
+    const timers = bubbleTimers.current;
+    return () => Object.values(timers).forEach((t) => clearTimeout(t));
+  }, []);
   const face = p.faceAllowed && settings.face && game !== 'gomoku';
 
   // 落子音效 / 震动 / 结束音
@@ -141,6 +185,8 @@ export function GameTable(p: GameTableProps) {
           captured={captured(p.top.side)}
           time={timeOf(p.top.side)}
           flipped={face}
+          onEmote={p.emoteSides.includes(p.top.side) ? () => setPicker(p.top.side) : undefined}
+          bubble={bubbles[p.top.side] && <EmoteBubble emote={bubbles[p.top.side]!} place="below" />}
         />
         <div className="board-area">
           {p.view.game === 'gomoku' ? (
@@ -185,6 +231,8 @@ export function GameTable(p: GameTableProps) {
           active={playing && c.turn === p.bottom.side}
           captured={captured(p.bottom.side)}
           time={timeOf(p.bottom.side)}
+          onEmote={p.emoteSides.includes(p.bottom.side) ? () => setPicker(p.bottom.side) : undefined}
+          bubble={bubbles[p.bottom.side] && <EmoteBubble emote={bubbles[p.bottom.side]!} place="above" />}
         />
       </div>
       <div className={`hint${pendingConfirm ? ' pending' : ''}${!playing ? ' over' : ''}`} aria-live="polite">
@@ -236,6 +284,12 @@ export function GameTable(p: GameTableProps) {
           {toast.text}
         </div>
       )}
+      <EmotePicker
+        open={picker !== null}
+        title={picker && p.emoteSides.length > 1 ? `${GAMES[game].sideName[picker]}发表情` : '发表情'}
+        onPick={(id) => picker && sendEmote(picker, id)}
+        onClose={() => setPicker(null)}
+      />
       <SettingsSheet open={showSettings} onClose={() => setShowSettings(false)} showFace={p.faceAllowed && game !== 'gomoku'} />
     </div>
   );

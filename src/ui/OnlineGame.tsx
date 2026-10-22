@@ -99,6 +99,9 @@ function OnlineRoom({ code, createGame }: { code: string; createGame: GameId | n
         faceAllowed={false}
         onMove={onMove}
         clock={{ times: state.times ?? [], elapsed }}
+        emoteSides={[me]}
+        onEmote={room.sendEmote}
+        emoteIn={room.emoteIn}
         resultTitle={resultTitle}
         banner={
           <div className="room-banner">

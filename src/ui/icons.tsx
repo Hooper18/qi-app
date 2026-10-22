@@ -40,3 +40,10 @@ export const IconFlip = () => (
     <path d="M7 4v14M4 15l3 3 3-3M17 20V6M14 9l3-3 3 3" />
   </svg>
 );
+export const IconSmile = () => (
+  <svg viewBox="0 0 24 24" {...base} aria-hidden>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8.5 14.5c.9 1.2 2.1 1.8 3.5 1.8s2.6-.6 3.5-1.8" />
+    <path d="M9 9.5h.01M15 9.5h.01" strokeWidth="2.4" />
+  </svg>
+);

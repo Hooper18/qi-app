@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import type { Color, GameId } from '../core/types';
+import { IconSmile } from './icons';
 
 // 被吃掉的子用文字显示：象棋用汉字，国际象棋用棋子符号（加 FE0E 强制文本样式，避免安卓显示成 emoji）
 const XQ_CHAR: Record<Color, Record<string, string>> = {
@@ -21,6 +23,8 @@ export function PlayerBar({
   captured,
   time,
   flipped,
+  onEmote,
+  bubble,
 }: {
   game: GameId;
   seat: Seat;
@@ -28,6 +32,8 @@ export function PlayerBar({
   captured: string[];
   time: string;
   flipped?: boolean;
+  onEmote?: () => void; // 有这个就显示表情按钮（这一方可以从本机发表情）
+  bubble?: ReactNode;
 }) {
   const opp: Color = seat.side === 'white' ? 'black' : 'white';
   const sorted = [...captured].sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
@@ -48,6 +54,12 @@ export function PlayerBar({
       <span className="player-time" aria-label="总用时">
         {time}
       </span>
+      {onEmote && (
+        <button className="emote-btn" onClick={onEmote} aria-label="发表情">
+          <IconSmile />
+        </button>
+      )}
+      {bubble}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 // 联机房间的状态机：本地存一份房间状态，和对方互发，版本号高的为准。
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { load, save } from '../core/storage';
+import { isKnownEmote } from '../emote/catalog';
 import { GAMES, otherColor, type Color, type GameId } from '../core/types';
 import { type AskKind, type ConnStatus, type RoomConnection, type RoomMsg, type RoomState, connectRoom } from './room';
 
@@ -31,6 +32,7 @@ export function useRoom(code: string, createGame: GameId | null) {
   const [incoming, setIncoming] = useState<IncomingAsk | null>(null);
   const [outgoing, setOutgoing] = useState<AskKind | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [emoteIn, setEmoteIn] = useState<{ side: Color; id: string; key: number } | null>(null);
   const connection = useRef<RoomConnection | null>(null);
   const peersRef = useRef(0);
   const latest = useRef(stored);
@@ -67,6 +69,8 @@ export function useRoom(code: string, createGame: GameId | null) {
         }
       } else if (msg.t === 'ask') {
         setIncoming({ kind: msg.kind, id: msg.id });
+      } else if (msg.t === 'emote') {
+        if (isKnownEmote(msg.id) && (msg.side === 'white' || msg.side === 'black')) setEmoteIn({ side: msg.side, id: msg.id, key: Date.now() });
       } else if (msg.t === 'answer') {
         setOutgoing(null);
         setNotice(`对方${msg.ok ? '同意' : '拒绝'}了${msg.kind === 'undo' ? '悔棋' : '重开'}`);
@@ -104,6 +108,7 @@ export function useRoom(code: string, createGame: GameId | null) {
   };
 
   const clearNotice = () => setNotice(null);
+  const sendEmote = (side: Color, id: string) => connection.current?.send({ t: 'emote', side, id });
 
-  return { state, mySide, seat: stored.seat, conn, peers, commit, ask, answer, incoming, outgoing, notice, clearNotice };
+  return { state, mySide, seat: stored.seat, conn, peers, commit, ask, answer, incoming, outgoing, notice, clearNotice, emoteIn, sendEmote };
 }

@@ -1,0 +1,33 @@
+// 两个页面联机：A 发动画表情和快捷语，B 能在"对方"信息条旁看到；同时检查双方用时同步
+import { chromium } from 'playwright';
+const root = process.argv[2] ?? 'http://localhost:5188/';
+const code = String(Math.floor(1000 + Math.random() * 9000));
+const b = await chromium.launch(process.env.QI_RESOLVE ? { args: [`--host-resolver-rules=${process.env.QI_RESOLVE}`] } : {});
+const mk = async () => (await b.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+const A = await mk();
+const B = await mk();
+await A.goto(`${root}#/room/${code}?game=gomoku&host=1`);
+await A.waitForSelector('.gomoku-svg');
+await B.goto(`${root}#/room/${code}`);
+await B.waitForSelector('.gomoku-svg');
+await A.waitForFunction(() => document.querySelector('.room-banner')?.textContent?.includes('对方在线'), null, { timeout: 15000 });
+await A.waitForTimeout(3000);
+// A 落一子（用时 ≥3 秒），B 应看到 A 的用时
+const box = await A.locator('.gomoku-svg').boundingBox();
+const x = box.x + box.width / 2;
+const y = box.y + box.height / 2;
+await A.mouse.click(x, y);
+await A.waitForTimeout(100);
+await A.mouse.click(x, y);
+await B.waitForFunction(() => document.querySelectorAll('.stone:not(.pending)').length === 1, null, { timeout: 10000 });
+console.log('B 看到的用时（上=对方 / 下=我）：', (await B.locator('.player-time').allTextContents()).join(' / '));
+await A.locator('.emote-btn').click();
+await A.locator('.emote-cell').nth(4).click();
+await B.waitForSelector('.player-bar >> nth=0 >> .emote-bubble svg', { timeout: 10000 });
+console.log('B 在对方信息条看到动画表情');
+await A.waitForTimeout(1400);
+await A.locator('.emote-btn').click();
+await A.locator('.phrase-chip').nth(1).click();
+await B.waitForSelector('.emote-bubble.phrase', { timeout: 10000 });
+console.log('B 看到快捷语：', await B.locator('.emote-bubble.phrase').textContent());
+await b.close();

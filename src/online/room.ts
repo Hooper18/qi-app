@@ -18,7 +18,8 @@ export type RoomMsg =
   | { t: 'state'; s: RoomState }
   | { t: 'hello' }
   | { t: 'ask'; kind: AskKind; id: string }
-  | { t: 'answer'; kind: AskKind; ok: boolean; id: string };
+  | { t: 'answer'; kind: AskKind; ok: boolean; id: string }
+  | { t: 'emote'; side: Color; id: string }; // 表情只广播、不进房间状态
 
 const URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
